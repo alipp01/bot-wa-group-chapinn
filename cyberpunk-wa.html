@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CYBER//CONNECT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --neon-green: #00ff9f;
+      --neon-pink: #ff2d78;
+      --neon-blue: #00d4ff;
+      --neon-yellow: #ffe600;
+      --dark-bg: #020810;
+      --dark-card: #050f1a;
+      --grid-color: rgba(0, 212, 255, 0.07);
+      --glitch-1: #ff2d78;
+      --glitch-2: #00ff9f;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--dark-bg);
+      font-family: 'Share Tech Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      position: fixed;
+      width: 16px; height: 16px;
+      border: 2px solid var(--neon-green);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s;
+      box-shadow: 0 0 8px var(--neon-green);
+    }
+    .cursor-dot {
+      position: fixed;
+      width: 4px; height: 4px;
+      background: var(--neon-pink);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 6px var(--neon-pink);
+    }
+
+    /* Grid background */
+    .grid-bg {
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(var(--grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+      animation: gridMove 20s linear infinite;
+    }
+    @keyframes gridMove {
+      0% { background-position: 0 0; }
+      100% { background-position: 40px 40px; }
+    }
+
+    /* Scanlines */
+    .scanlines {
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.15) 2px,
+        rgba(0,0,0,0.15) 4px
+      );
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Noise overlay */
+    .noise {
+      position: fixed; inset: 0;
+      opacity: 0.03;
+      z-index: 2;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+      animation: noiseAnim 0.5s steps(2) infinite;
+    }
+    @keyframes noiseAnim {
+      0%   { background-position: 0 0; }
+      25%  { background-position: -30px 20px; }
+      50%  { background-position: 20px -10px; }
+      75%  { background-position: -10px 30px; }
+      100% { background-position: 0 0; }
+    }
+
+    /* Corner decorations */
+    .corner { position: fixed; width: 60px; height: 60px; z-index: 3; }
+    .corner-tl { top: 16px; left: 16px; border-top: 2px solid var(--neon-blue); border-left: 2px solid var(--neon-blue); }
+    .corner-tr { top: 16px; right: 16px; border-top: 2px solid var(--neon-pink); border-right: 2px solid var(--neon-pink); }
+    .corner-bl { bottom: 16px; left: 16px; border-bottom: 2px solid var(--neon-green); border-left: 2px solid var(--neon-green); }
+    .corner-br { bottom: 16px; right: 16px; border-bottom: 2px solid var(--neon-yellow); border-right: 2px solid var(--neon-yellow); }
+    .corner::before {
+      content: '';
+      position: absolute;
+      width: 6px; height: 6px;
+      background: var(--neon-blue);
+      border-radius: 50%;
+    }
+    .corner-tl::before { top: -3px; left: -3px; background: var(--neon-blue); box-shadow: 0 0 8px var(--neon-blue); }
+    .corner-tr::before { top: -3px; right: -3px; background: var(--neon-pink); box-shadow: 0 0 8px var(--neon-pink); }
+    .corner-bl::before { bottom: -3px; left: -3px; background: var(--neon-green); box-shadow: 0 0 8px var(--neon-green); }
+    .corner-br::before { bottom: -3px; right: -3px; background: var(--neon-yellow); box-shadow: 0 0 8px var(--neon-yellow); }
+
+    /* Main container */
+    .container {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+    }
+
+    /* Intro animation overlay */
+    .intro {
+      position: fixed; inset: 0;
+      z-index: 100;
+      background: var(--dark-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      animation: introFade 0.5s ease 2.8s forwards;
+    }
+    @keyframes introFade {
+      to { opacity: 0; pointer-events: none; }
+    }
+    .intro-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(24px, 6vw, 60px);
+      font-weight: 900;
+      color: var(--neon-green);
+      letter-spacing: 0.2em;
+      text-shadow: 0 0 20px var(--neon-green), 0 0 60px var(--neon-green);
+      animation: introTextGlitch 2.5s ease-out forwards;
+      overflow: hidden;
+      white-space: nowrap;
+      width: 0;
+    }
+    @keyframes introTextGlitch {
+      0%   { width: 0; }
+      20%  { width: 40%; opacity: 1; }
+      40%  { opacity: 0.5; text-shadow: 4px 0 var(--neon-pink), -4px 0 var(--neon-blue); }
+      60%  { opacity: 1; width: 70%; }
+      80%  { width: 100%; opacity: 0.8; }
+      100% { width: 100%; opacity: 1; }
+    }
+    .intro-bar {
+      width: 0; height: 2px;
+      background: linear-gradient(90deg, var(--neon-green), var(--neon-blue));
+      margin-top: 16px;
+      box-shadow: 0 0 10px var(--neon-green);
+      animation: introBar 2.5s ease forwards;
+    }
+    @keyframes introBar {
+      0%   { width: 0; }
+      100% { width: 300px; }
+    }
+    .intro-sub {
+      font-size: 13px;
+      color: var(--neon-blue);
+      margin-top: 10px;
+      opacity: 0;
+      animation: fadeIn 0.5s ease 1.5s forwards;
+      letter-spacing: 0.3em;
+    }
+    @keyframes fadeIn { to { opacity: 1; } }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 50px;
+      opacity: 0;
+      animation: slideDown 0.8s ease 3.2s forwards;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-40px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .header-tag {
+      font-size: 11px;
+      color: var(--neon-blue);
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .header-tag span { color: var(--neon-pink); }
+    .header h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(28px, 7vw, 72px);
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 0.08em;
+      position: relative;
+      text-shadow: 0 0 30px rgba(255,255,255,0.3);
+    }
+    .header h1 .accent { color: var(--neon-green); text-shadow: 0 0 20px var(--neon-green); }
+    .header h1 .accent2 { color: var(--neon-pink); text-shadow: 0 0 20px var(--neon-pink); }
+    .header-line {
+      width: 200px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon-green), transparent);
+      margin: 16px auto;
+    }
+    .header-sub {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.25em;
+    }
+
+    /* Cards */
+    .cards {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .card {
+      position: relative;
+      background: var(--dark-card);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      padding: 28px 28px 28px 24px;
+      cursor: none;
+      overflow: hidden;
+      opacity: 0;
+      transition: border-color 0.3s, transform 0.3s;
+      text-decoration: none;
+      display: block;
+    }
+    .card:nth-child(1) { animation: slideIn 0.7s ease 3.5s forwards; }
+    .card:nth-child(2) { animation: slideIn 0.7s ease 3.7s forwards; }
+    .card:nth-child(3) { animation: slideIn 0.7s ease 3.9s forwards; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Card accent line */
+    .card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      transition: height 0.3s;
+    }
+    .card-group::before   { background: var(--neon-green); box-shadow: 0 0 12px var(--neon-green); }
+    .card-channel::before { background: var(--neon-blue);  box-shadow: 0 0 12px var(--neon-blue); }
+    .card-chat::before    { background: var(--neon-pink);  box-shadow: 0 0 12px var(--neon-pink); }
+
+    /* Hover glow effect */
+    .card-group:hover   { border-color: var(--neon-green); box-shadow: 0 0 30px rgba(0,255,159,0.15), inset 0 0 30px rgba(0,255,159,0.05); transform: translateX(6px); }
+    .card-channel:hover { border-color: var(--neon-blue);  box-shadow: 0 0 30px rgba(0,212,255,0.15), inset 0 0 30px rgba(0,212,255,0.05); transform: translateX(6px); }
+    .card-chat:hover    { border-color: var(--neon-pink);  box-shadow: 0 0 30px rgba(255,45,120,0.15), inset 0 0 30px rgba(255,45,120,0.05); transform: translateX(6px); }
+
+    /* Card corner decoration */
+    .card-corner {
+      position: absolute;
+      top: 10px; right: 10px;
+      width: 20px; height: 20px;
+      border-top: 1px solid;
+      border-right: 1px solid;
+      opacity: 0.5;
+    }
+    .card-group .card-corner   { border-color: var(--neon-green); }
+    .card-channel .card-corner { border-color: var(--neon-blue); }
+    .card-chat .card-corner    { border-color: var(--neon-pink); }
+
+    .card-label {
+      font-size: 10px;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .card-group .card-label   { color: var(--neon-green); }
+    .card-channel .card-label { color: var(--neon-blue); }
+    .card-chat .card-label    { color: var(--neon-pink); }
+
+    .card-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.1em;
+    }
+
+    /* Arrow icon */
+    .card-arrow {
+      position: absolute;
+      right: 28px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      opacity: 0;
+      transition: opacity 0.3s, right 0.3s;
+    }
+    .card-group .card-arrow   { color: var(--neon-green); }
+    .card-channel .card-arrow { color: var(--neon-blue); }
+    .card-chat .card-arrow    { color: var(--neon-pink); }
+    .card:hover .card-arrow   { opacity: 1; right: 20px; }
+
+    /* Ripple */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      animation: rippleEffect 0.6s linear;
+      pointer-events: none;
+    }
+    .card-group .ripple   { background: rgba(0,255,159,0.25); }
+    .card-channel .ripple { background: rgba(0,212,255,0.25); }
+    .card-chat .ripple    { background: rgba(255,45,120,0.25); }
+
+    @keyframes rippleEffect {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    /* Status bar */
+    .status-bar {
+      margin-top: 50px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.2em;
+      opacity: 0;
+      animation: fadeIn 0.5s ease 4.2s forwards;
+    }
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--neon-green);
+      box-shadow: 0 0 8px var(--neon-green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Click flash overlay */
+    .click-flash {
+      position: fixed; inset: 0;
+      background: rgba(0,255,159,0.05);
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0;
+      transition: opacity 0.05s;
+    }
+    .click-flash.flash { opacity: 1; }
+
+    /* Glitch animation on hover text */
+    .card:hover .card-title {
+      animation: textGlitch 0.3s ease;
+    }
+    @keyframes textGlitch {
+      0%   { clip-path: none; transform: none; }
+      20%  { clip-path: polygon(0 0,100% 0,100% 35%,0 35%); transform: translate(-2px, 0); color: var(--neon-pink); }
+      40%  { clip-path: polygon(0 40%,100% 40%,100% 75%,0 75%); transform: translate(2px, 0); color: var(--neon-blue); }
+      60%  { clip-path: none; transform: translate(-1px,0); color: #fff; }
+      100% { clip-path: none; transform: none; color: #fff; }
+    }
+
+    /* Floating particles */
+    .particles { position: fixed; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; }
+    .particle {
+      position: absolute;
+      width: 2px; height: 2px;
+      border-radius: 50%;
+      animation: float linear infinite;
+    }
+    @keyframes float {
+      0%   { transform: translateY(100vh) translateX(0); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 1; }
+      100% { transform: translateY(-100px) translateX(var(--drift)); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-dot" id="cursorDot"></div>
+
+  <div class="grid-bg"></div>
+  <div class="scanlines"></div>
+  <div class="noise"></div>
+  <div class="particles" id="particles"></div>
+
+  <div class="corner corner-tl"></div>
+  <div class="corner corner-tr"></div>
+  <div class="corner corner-bl"></div>
+  <div class="corner corner-br"></div>
+
+  <div class="click-flash" id="clickFlash"></div>
+
+  <!-- INTRO -->
+  <div class="intro" id="intro">
+    <div class="intro-text">CYBER//CONNECT</div>
+    <div class="intro-bar"></div>
+    <div class="intro-sub">INITIALIZING CONNECTION...</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="container">
+    <div class="header">
+      <div class="header-tag">// <span>NODE_ID</span>: 6281373791748 //</div>
+      <h1><span class="accent">CYBER</span>//<span class="accent2">CONNECT</span></h1>
+      <div class="header-line"></div>
+      <div class="header-sub">SELECT YOUR ACCESS POINT</div>
+    </div>
+
+    <div class="cards">
+
+      <!-- GROUP -->
+      <a class="card card-group"
+         href="https://chat.whatsapp.com/JjTpj4Cc7gT7ksvIHeQCIJ"
+         target="_blank" rel="noopener">
+        <div class="card-corner"></div>
+        <div class="card-label">// CHANNEL_01</div>
+        <div class="card-title">GROUP WA</div>
+        <div class="card-desc">JOIN THE COMMUNITY NETWORK</div>
+        <div class="card-arrow">&#10230;</div>
+      </a>
+
+      <!-- SALURAN -->
+      <a class="card card-channel"
+         href="https://whatsapp.com/channel/0029Vb8Eh6o3wtb8VqrpZu3m"
+         target="_blank" rel="noopener">
+        <div class="card-corner"></div>
+        <div class="card-label">// CHANNEL_02</div>
+        <div class="card-title">SALURAN WA</div>
+        <div class="card-desc">SUBSCRIBE TO BROADCAST NODE</div>
+        <div class="card-arrow">&#10230;</div>
+      </a>
+
+      <!-- CHAT LANGSUNG -->
+      <a class="card card-chat"
+         href="https://wa.me/6281373791748"
+         target="_blank" rel="noopener">
+        <div class="card-corner"></div>
+        <div class="card-label">// CHANNEL_03</div>
+        <div class="card-title">CHAT LANGSUNG</div>
+        <div class="card-desc">DIRECT LINK TO OPERATOR</div>
+        <div class="card-arrow">&#10230;</div>
+      </a>
+
+    </div>
+
+    <div class="status-bar">
+      <div class="status-dot"></div>
+      <span>SYSTEM ONLINE</span>
+      <span>//</span>
+      <span>ENCRYPTION: ACTIVE</span>
+    </div>
+  </div>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const cursorDot = document.getElementById('cursorDot');
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top  = e.clientY + 'px';
+      cursorDot.style.left = e.clientX + 'px';
+      cursorDot.style.top  = e.clientY + 'px';
+    });
+
+    // Ripple on card click
+    document.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('click', function(e) {
+        // flash screen
+        const flash = document.getElementById('clickFlash');
+        flash.classList.add('flash');
+        setTimeout(() => flash.classList.remove('flash'), 150);
+
+        // ripple
+        const rect = card.getBoundingClientRect();
+        const r = document.createElement('span');
+        const size = Math.max(rect.width, rect.height);
+        r.classList.add('ripple');
+        r.style.cssText = `
+          width:${size}px; height:${size}px;
+          left:${e.clientX - rect.left - size/2}px;
+          top:${e.clientY - rect.top - size/2}px;
+        `;
+        card.appendChild(r);
+        setTimeout(() => r.remove(), 700);
+      });
+    });
+
+    // Particles
+    const particlesEl = document.getElementById('particles');
+    const colors = ['#00ff9f','#00d4ff','#ff2d78','#ffe600'];
+    for (let i = 0; i < 30; i++) {
+      const p = document.createElement('div');
+      p.classList.add('particle');
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      p.style.cssText = `
+        left: ${Math.random()*100}%;
+        background: ${color};
+        box-shadow: 0 0 6px ${color};
+        --drift: ${(Math.random()-0.5)*80}px;
+        animation-duration: ${4 + Math.random()*8}s;
+        animation-delay: ${Math.random()*8}s;
+      `;
+      particlesEl.appendChild(p);
+    }
+
+    // Card cursor scale
+    document.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        cursor.style.transform = 'translate(-50%,-50%) scale(2)';
+        cursor.style.borderColor = 'var(--neon-pink)';
+        cursor.style.boxShadow = '0 0 12px var(--neon-pink)';
+      });
+      card.addEventListener('mouseleave', () => {
+        cursor.style.transform = 'translate(-50%,-50%) scale(1)';
+        cursor.style.borderColor = 'var(--neon-green)';
+        cursor.style.boxShadow = '0 0 8px var(--neon-green)';
+      });
+    });
+  </script>
+</body>
+</html>
